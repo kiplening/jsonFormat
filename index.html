@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>JSON Formatter</h1>
+            <p>Transform JSON strings into beautifully formatted JSON objects</p>
+        </header>
+
+        <main>
+            <div class="formatter-section">
+                <div class="input-section">
+                    <h2>Input JSON</h2>
+                    <textarea id="jsonInput" placeholder="Paste your JSON string here..."></textarea>
+                    <div class="button-group">
+                        <button id="formatBtn">Format JSON</button>
+                        <button id="minifyBtn">Minify JSON</button>
+                        <button id="validateBtn">Validate JSON</button>
+                        <button id="clearBtn">Clear</button>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <h2>Formatted JSON</h2>
+                    <div class="output-header">
+                        <button id="copyBtn">Copy to Clipboard</button>
+                    </div>
+                    <pre id="jsonOutput"></pre>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
