@@ -39,8 +39,7 @@ class JSONFormatter {
             this.renderCollapsibleJSON(parsed);
             this.showStatus('JSON formatted successfully!', 'success');
         } catch (error) {
-            this.showStatus(`Invalid JSON: ${error.message}`, 'error');
-            this.jsonOutput.textContent = '';
+            this.displayDetailedError(error, input);
         }
     }
 
@@ -199,8 +198,7 @@ class JSONFormatter {
             this.jsonOutput.textContent = minified;
             this.showStatus('JSON minified successfully!', 'success');
         } catch (error) {
-            this.showStatus(`Invalid JSON: ${error.message}`, 'error');
-            this.jsonOutput.textContent = '';
+            this.displayDetailedError(error, input);
         }
     }
 
@@ -216,7 +214,7 @@ class JSONFormatter {
             JSON.parse(input);
             this.showStatus('✅ Valid JSON!', 'success');
         } catch (error) {
-            this.showStatus(`❌ Invalid JSON: ${error.message}`, 'error');
+            this.displayDetailedError(error, input);
         }
     }
 
@@ -279,6 +277,104 @@ class JSONFormatter {
         }
     }
 
+
+    displayDetailedError(error, input) {
+        this.jsonOutput.innerHTML = '';
+
+        // Extract position from error message if available
+        const positionMatch = error.message.match(/position (\d+)/);
+        let errorPosition = positionMatch ? parseInt(positionMatch[1]) : -1;
+
+        // Create error display
+        const errorContainer = document.createElement('div');
+        errorContainer.style.color = '#721c24';
+        errorContainer.style.padding = '15px';
+        errorContainer.style.backgroundColor = '#f8d7da';
+        errorContainer.style.border = '1px solid #f5c6cb';
+        errorContainer.style.borderRadius = '6px';
+
+        // Error title
+        const errorTitle = document.createElement('div');
+        errorTitle.style.fontWeight = 'bold';
+        errorTitle.style.marginBottom = '10px';
+        errorTitle.style.fontSize = '16px';
+        errorTitle.textContent = '❌ Invalid JSON';
+        errorContainer.appendChild(errorTitle);
+
+        // Error message
+        const errorMsg = document.createElement('div');
+        errorMsg.style.marginBottom = '10px';
+        errorMsg.textContent = `Error: ${error.message}`;
+        errorContainer.appendChild(errorMsg);
+
+        // Show position and context
+        if (errorPosition >= 0) {
+            const lineInfo = this.getLineAndColumn(input, errorPosition);
+
+            const posInfo = document.createElement('div');
+            posInfo.style.marginBottom = '10px';
+            posInfo.innerHTML = `Location: Line ${lineInfo.line}, Column ${lineInfo.column}`;
+            errorContainer.appendChild(posInfo);
+
+            // Show code snippet with error highlight
+            const codeSnippet = document.createElement('pre');
+            codeSnippet.style.backgroundColor = '#fff';
+            codeSnippet.style.padding = '10px';
+            codeSnippet.style.borderRadius = '4px';
+            codeSnippet.style.overflow = 'auto';
+            codeSnippet.style.fontSize = '13px';
+            codeSnippet.style.fontFamily = 'Courier New, monospace';
+
+            const lines = input.split('\n');
+            const contextStart = Math.max(0, lineInfo.line - 3);
+            const contextEnd = Math.min(lines.length, lineInfo.line + 2);
+
+            let snippet = '';
+            for (let i = contextStart; i < contextEnd; i++) {
+                const lineNum = i + 1;
+                const line = lines[i];
+
+                if (lineNum === lineInfo.line) {
+                    snippet += `<span style="background-color: #ffdddd; display: block; padding: 2px 0;">${lineNum}: ${this.escapeHtml(line)}</span>`;
+                    snippet += `<span style="color: #d32f2f; display: block; padding: 2px 0;">${' '.repeat(String(lineNum).length + 2 + lineInfo.column - 1)}^</span>`;
+                } else {
+                    snippet += `${lineNum}: ${this.escapeHtml(line)}\n`;
+                }
+            }
+
+            codeSnippet.innerHTML = snippet;
+            errorContainer.appendChild(codeSnippet);
+        }
+
+        // Common errors help
+        const helpSection = document.createElement('div');
+        helpSection.style.marginTop = '10px';
+        helpSection.style.fontSize = '13px';
+        helpSection.innerHTML = '<strong>Common issues:</strong><br/>' +
+            '• Missing or extra commas<br/>' +
+            '• Unquoted keys (use "key" not key)<br/>' +
+            '• Single quotes (use " not \')<br/>' +
+            '• Trailing commas in objects/arrays<br/>' +
+            '• Unclosed brackets or braces';
+        errorContainer.appendChild(helpSection);
+
+        this.jsonOutput.appendChild(errorContainer);
+        this.showStatus(`❌ Invalid JSON: ${error.message}`, 'error');
+    }
+
+    getLineAndColumn(text, position) {
+        const lines = text.substring(0, position).split('\n');
+        return {
+            line: lines.length,
+            column: lines[lines.length - 1].length + 1
+        };
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
     showStatus(message, type) {
         this.statusMessage.textContent = message;
