@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Encoder & Decoder</title>
+    <link rel="stylesheet" href="url-tool.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>URL Encoder & Decoder</h1>
+            <nav class="nav-links">
+                <a href="index.html">JSON Formatter</a>
+                <a href="url-tool.html" class="active">URL Tool</a>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-header">
+                    <h2>Input</h2>
+                    <div class="button-group">
+                        <button id="encodeBtn" class="btn btn-primary">Encode</button>
+                        <button id="decodeBtn" class="btn btn-secondary">Decode</button>
+                        <button id="clearBtn" class="btn btn-danger">Clear</button>
+                    </div>
+                </div>
+                <textarea id="urlInput" placeholder="Paste your text here to encode or decode..."></textarea>
+            </div>
+
+            <div class="output-section">
+                <div class="section-header">
+                    <h2>Output</h2>
+                    <div class="button-group">
+                        <button id="copyBtn" class="btn btn-success">Copy</button>
+                    </div>
+                </div>
+                <textarea id="urlOutput" readonly></textarea>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="info-section">
+            <h3>About URL Encoding:</h3>
+            <ul>
+                <li>URL encoding converts characters into a format that can be transmitted over the Internet</li>
+                <li>Special characters are replaced with a "%" followed by two hexadecimal digits</li>
+                <li>Useful for encoding JSON data in URLs or query parameters</li>
+                <li>Example: <code>{"name":"John"}</code> → <code>%7B%22name%22%3A%22John%22%7D</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="url-tool.js"></script>
+</body>
+</html>
