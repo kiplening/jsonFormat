@@ -13,7 +13,12 @@
       "Bash(git remote set-url:*)",
       "Bash(ssh-keygen:*)",
       "WebFetch(domain:kiplening.github.io)",
-      "Bash(open index.html)"
+      "Bash(open index.html)",
+      "Read(//Users/liaoxudong/PycharmProjects/pythonProject/**)",
+      "Bash(git checkout:*)",
+      "Bash(git log:*)",
+      "Bash(grep:*)",
+      "Bash(open test-lazy-render.html)"
     ],
     "deny": [],
     "ask": []

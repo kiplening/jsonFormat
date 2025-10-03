@@ -1,0 +1,6 @@
+# .gitignore
+*.json
+test-*.json
+*.log
+node_modules/
+.DS_Store
