@@ -80,12 +80,19 @@ class JSONFormatter {
 
             const toggleBtn = this.createToggleButton();
             const openBracket = this.createTextNode('[');
+
+            // Add array size
+            const sizeSpan = document.createElement('span');
+            sizeSpan.className = 'json-size';
+            sizeSpan.textContent = ` // ${data.length} items`;
+
             const closeBracket = this.createTextNode(indentStr + ']');
             const contentDiv = document.createElement('div');
             contentDiv.className = 'json-collapsible-content';
 
             container.appendChild(toggleBtn);
             container.appendChild(openBracket);
+            container.appendChild(sizeSpan);
             container.appendChild(contentDiv);
 
             data.forEach((item, index) => {
@@ -111,7 +118,9 @@ class JSONFormatter {
 
             toggleBtn.addEventListener('click', () => {
                 contentDiv.classList.toggle('collapsed');
-                toggleBtn.textContent = contentDiv.classList.contains('collapsed') ? '▶' : '▼';
+                const isCollapsed = contentDiv.classList.contains('collapsed');
+                toggleBtn.textContent = isCollapsed ? '▶' : '▼';
+                sizeSpan.style.display = isCollapsed ? 'inline' : 'none';
             });
 
         } else if (typeof data === 'object' && data !== null) {
@@ -123,12 +132,19 @@ class JSONFormatter {
 
             const toggleBtn = this.createToggleButton();
             const openBrace = this.createTextNode('{');
+
+            // Add object size
+            const sizeSpan = document.createElement('span');
+            sizeSpan.className = 'json-size';
+            sizeSpan.textContent = ` // ${keys.length} fields`;
+
             const closeBrace = this.createTextNode(indentStr + '}');
             const contentDiv = document.createElement('div');
             contentDiv.className = 'json-collapsible-content';
 
             container.appendChild(toggleBtn);
             container.appendChild(openBrace);
+            container.appendChild(sizeSpan);
             container.appendChild(contentDiv);
 
             keys.forEach((key, index) => {
@@ -161,7 +177,9 @@ class JSONFormatter {
 
             toggleBtn.addEventListener('click', () => {
                 contentDiv.classList.toggle('collapsed');
-                toggleBtn.textContent = contentDiv.classList.contains('collapsed') ? '▶' : '▼';
+                const isCollapsed = contentDiv.classList.contains('collapsed');
+                toggleBtn.textContent = isCollapsed ? '▶' : '▼';
+                sizeSpan.style.display = isCollapsed ? 'inline' : 'none';
             });
 
         } else {
@@ -305,24 +323,30 @@ class JSONFormatter {
     }
 
     async copyToClipboard() {
-        const output = this.jsonOutput.textContent;
-
-        if (!output) {
+        if (!this.currentData) {
             this.showStatus('No formatted JSON to copy', 'error');
             return;
         }
 
         try {
-            await navigator.clipboard.writeText(output);
+            const indentSize = this.indentSize.value;
+            const indent = indentSize === 'tab' ? '\t' : parseInt(indentSize);
+            const jsonString = JSON.stringify(this.currentData, null, indent);
+
+            await navigator.clipboard.writeText(jsonString);
             this.showStatus('Copied to clipboard!', 'success');
         } catch (error) {
-            this.fallbackCopyToClipboard(output);
+            this.fallbackCopyToClipboard();
         }
     }
 
-    fallbackCopyToClipboard(text) {
+    fallbackCopyToClipboard() {
+        const indentSize = this.indentSize.value;
+        const indent = indentSize === 'tab' ? '\t' : parseInt(indentSize);
+        const jsonString = JSON.stringify(this.currentData, null, indent);
+
         const textArea = document.createElement('textarea');
-        textArea.value = text;
+        textArea.value = jsonString;
         textArea.style.position = 'fixed';
         textArea.style.left = '-999999px';
         textArea.style.top = '-999999px';

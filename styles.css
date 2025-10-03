@@ -86,21 +86,29 @@ main {
 
 .input-section h2, .output-section h2 {
     color: #2c3e50;
-    margin-bottom: 8px;
+    margin: 0;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
 #jsonInput {
     width: 100%;
     flex: 1;
-    border: 2px solid #e0e0e0;
+    border: 1px solid #d1d9e0;
     border-radius: 8px;
-    padding: 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    padding: 15px;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 13px;
     resize: none;
-    transition: border-color 0.3s ease;
+    transition: all 0.2s ease;
+    background: #ffffff;
 }
 
 #jsonInput:focus {
@@ -157,14 +165,6 @@ button:active {
     transform: translateY(0);
 }
 
-.output-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    gap: 10px;
-}
-
 .control-group {
     display: flex;
     align-items: center;
@@ -172,51 +172,102 @@ button:active {
 }
 
 .control-group label {
-    font-size: 13px;
-    color: #2c3e50;
+    font-size: 12px;
+    color: #5a6c7d;
     font-weight: 500;
 }
 
 .control-group select {
-    padding: 6px 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 5px 10px;
+    border: 1px solid #d1d9e0;
+    border-radius: 5px;
+    font-size: 12px;
     cursor: pointer;
     background: white;
-    transition: border-color 0.3s ease;
+    color: #2c3e50;
+    transition: all 0.2s ease;
+}
+
+.control-group select:hover {
+    border-color: #667eea;
 }
 
 .control-group select:focus {
     outline: none;
     border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.btn-small {
+.output-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    gap: 10px;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
     padding: 6px 12px;
     font-size: 12px;
     min-width: auto;
+    background: white;
+    color: #5a6c7d;
+    border: 1px solid #d1d9e0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-#copyBtn, #downloadBtn {
-    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+.btn-icon:hover {
+    background: #667eea;
     color: white;
-    padding: 8px 16px;
+    border-color: #667eea;
+}
+
+.btn-icon span {
+    font-size: 11px;
+}
+
+.btn-action {
+    padding: 6px 14px;
     font-size: 12px;
+    min-width: auto;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-action:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+.btn-action span {
+    font-size: 14px;
 }
 
 #jsonOutput {
-    background: #f8f9fa;
-    border: 2px solid #e0e0e0;
+    background: #ffffff;
+    border: 1px solid #d1d9e0;
     border-radius: 8px;
-    padding: 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    padding: 15px;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 13px;
     flex: 1;
     overflow: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 1.5;
+    line-height: 1.6;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .status-section {
@@ -264,13 +315,25 @@ button:active {
 
 .json-toggle {
     display: inline-block;
-    width: 16px;
+    width: 18px;
+    height: 18px;
     text-align: center;
+    line-height: 18px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
 }
 
 .json-toggle:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
+    background-color: #e8eef5;
+    transform: scale(1.1);
+}
+
+.json-size {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 12px;
+    margin-left: 5px;
+    display: none;
 }
 
 @media (max-width: 768px) {

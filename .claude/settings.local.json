@@ -12,7 +12,8 @@
       "Bash(cat:*)",
       "Bash(git remote set-url:*)",
       "Bash(ssh-keygen:*)",
-      "WebFetch(domain:kiplening.github.io)"
+      "WebFetch(domain:kiplening.github.io)",
+      "Bash(open index.html)"
     ],
     "deny": [],
     "ask": []

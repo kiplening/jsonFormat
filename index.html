@@ -30,8 +30,8 @@
                 </div>
 
                 <div class="output-section">
-                    <h2>Formatted JSON</h2>
-                    <div class="output-header">
+                    <div class="section-header-row">
+                        <h2>Formatted JSON</h2>
                         <div class="control-group">
                             <label for="indentSize">Indent:</label>
                             <select id="indentSize">
@@ -40,11 +40,23 @@
                                 <option value="tab">Tab</option>
                             </select>
                         </div>
-                        <div class="button-group">
-                            <button id="expandAllBtn" class="btn-small">Expand All</button>
-                            <button id="collapseAllBtn" class="btn-small">Collapse All</button>
-                            <button id="copyBtn">Copy</button>
-                            <button id="downloadBtn">Download</button>
+                    </div>
+                    <div class="output-toolbar">
+                        <div class="toolbar-group">
+                            <button id="expandAllBtn" class="btn-icon" title="Expand All">
+                                <span>▼</span> Expand
+                            </button>
+                            <button id="collapseAllBtn" class="btn-icon" title="Collapse All">
+                                <span>▶</span> Collapse
+                            </button>
+                        </div>
+                        <div class="toolbar-group">
+                            <button id="copyBtn" class="btn-action">
+                                <span>📋</span> Copy
+                            </button>
+                            <button id="downloadBtn" class="btn-action">
+                                <span>⬇️</span> Download
+                            </button>
                         </div>
                     </div>
                     <pre id="jsonOutput"></pre>
