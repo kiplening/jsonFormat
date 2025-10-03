@@ -7,6 +7,7 @@ class JSONFormatter {
         this.formatBtn = document.getElementById('formatBtn');
         this.minifyBtn = document.getElementById('minifyBtn');
         this.validateBtn = document.getElementById('validateBtn');
+        this.uploadBtn = document.getElementById('uploadBtn');
         this.clearBtn = document.getElementById('clearBtn');
         this.copyBtn = document.getElementById('copyBtn');
         this.downloadBtn = document.getElementById('downloadBtn');
@@ -15,6 +16,7 @@ class JSONFormatter {
         this.indentSize = document.getElementById('indentSize');
         this.searchInput = document.getElementById('searchInput');
         this.searchResults = document.getElementById('searchResults');
+        this.fileInput = document.getElementById('fileInput');
 
         this.currentData = null;
         this.initEventListeners();
@@ -24,6 +26,7 @@ class JSONFormatter {
         this.formatBtn.addEventListener('click', () => this.formatJSON());
         this.minifyBtn.addEventListener('click', () => this.minifyJSON());
         this.validateBtn.addEventListener('click', () => this.validateJSON());
+        this.uploadBtn.addEventListener('click', () => this.uploadFile());
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
         this.downloadBtn.addEventListener('click', () => this.downloadJSON());
@@ -36,6 +39,8 @@ class JSONFormatter {
         this.jsonInput.addEventListener('paste', () => {
             setTimeout(() => this.autoFormat(), 100);
         });
+
+        this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
     }
 
     formatJSON() {
@@ -563,6 +568,42 @@ class JSONFormatter {
         this.currentData = null;
         this.hideStatus();
         this.jsonInput.focus();
+    }
+
+    uploadFile() {
+        this.fileInput.click();
+    }
+
+    handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.name.endsWith('.json')) {
+            this.showStatus('Please select a valid JSON file', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const content = e.target.result;
+                this.jsonInput.value = content;
+                this.formatJSON();
+                this.showStatus(`File "${file.name}" loaded successfully!`, 'success');
+            } catch (error) {
+                this.showStatus(`Error reading file: ${error.message}`, 'error');
+            }
+        };
+
+        reader.onerror = () => {
+            this.showStatus('Error reading file', 'error');
+        };
+
+        reader.readAsText(file);
+
+        // Reset file input so same file can be uploaded again
+        this.fileInput.value = '';
     }
 
     downloadJSON() {

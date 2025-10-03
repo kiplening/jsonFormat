@@ -154,6 +154,11 @@ button {
     color: white;
 }
 
+#uploadBtn {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
+}
+
 #clearBtn {
     background: linear-gradient(135deg, #f44336, #d32f2f);
     color: white;
