@@ -32,7 +32,20 @@
                 <div class="output-section">
                     <h2>Formatted JSON</h2>
                     <div class="output-header">
-                        <button id="copyBtn">Copy to Clipboard</button>
+                        <div class="control-group">
+                            <label for="indentSize">Indent:</label>
+                            <select id="indentSize">
+                                <option value="2" selected>2 spaces</option>
+                                <option value="4">4 spaces</option>
+                                <option value="tab">Tab</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button id="expandAllBtn" class="btn-small">Expand All</button>
+                            <button id="collapseAllBtn" class="btn-small">Collapse All</button>
+                            <button id="copyBtn">Copy</button>
+                            <button id="downloadBtn">Download</button>
+                        </div>
                     </div>
                     <pre id="jsonOutput"></pre>
                 </div>

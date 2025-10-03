@@ -9,7 +9,12 @@ class JSONFormatter {
         this.validateBtn = document.getElementById('validateBtn');
         this.clearBtn = document.getElementById('clearBtn');
         this.copyBtn = document.getElementById('copyBtn');
+        this.downloadBtn = document.getElementById('downloadBtn');
+        this.expandAllBtn = document.getElementById('expandAllBtn');
+        this.collapseAllBtn = document.getElementById('collapseAllBtn');
+        this.indentSize = document.getElementById('indentSize');
 
+        this.currentData = null;
         this.initEventListeners();
     }
 
@@ -19,6 +24,10 @@ class JSONFormatter {
         this.validateBtn.addEventListener('click', () => this.validateJSON());
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
+        this.downloadBtn.addEventListener('click', () => this.downloadJSON());
+        this.expandAllBtn.addEventListener('click', () => this.expandAll());
+        this.collapseAllBtn.addEventListener('click', () => this.collapseAll());
+        this.indentSize.addEventListener('change', () => this.onIndentChange());
 
         this.jsonInput.addEventListener('input', () => this.hideStatus());
         this.jsonInput.addEventListener('paste', () => {
@@ -36,10 +45,17 @@ class JSONFormatter {
 
         try {
             const parsed = JSON.parse(input);
+            this.currentData = parsed;
             this.renderCollapsibleJSON(parsed);
             this.showStatus('JSON formatted successfully!', 'success');
         } catch (error) {
             this.displayDetailedError(error, input);
+        }
+    }
+
+    onIndentChange() {
+        if (this.currentData) {
+            this.renderCollapsibleJSON(this.currentData);
         }
     }
 
@@ -52,7 +68,9 @@ class JSONFormatter {
     }
 
     buildCollapsibleElement(data, container, indent) {
-        const indentStr = '  '.repeat(indent);
+        const indentSize = this.indentSize.value;
+        const indentChar = indentSize === 'tab' ? '\t' : ' '.repeat(parseInt(indentSize));
+        const indentStr = indentChar.repeat(indent);
 
         if (Array.isArray(data)) {
             if (data.length === 0) {
@@ -221,8 +239,69 @@ class JSONFormatter {
     clearAll() {
         this.jsonInput.value = '';
         this.jsonOutput.textContent = '';
+        this.currentData = null;
         this.hideStatus();
         this.jsonInput.focus();
+    }
+
+    downloadJSON() {
+        if (!this.currentData) {
+            this.showStatus('No formatted JSON to download', 'error');
+            return;
+        }
+
+        try {
+            const indentSize = this.indentSize.value;
+            const indent = indentSize === 'tab' ? '\t' : parseInt(indentSize);
+            const jsonString = JSON.stringify(this.currentData, null, indent);
+
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'formatted.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            this.showStatus('JSON downloaded successfully!', 'success');
+        } catch (error) {
+            this.showStatus(`Failed to download: ${error.message}`, 'error');
+        }
+    }
+
+    expandAll() {
+        const collapsedElements = this.jsonOutput.querySelectorAll('.json-collapsible-content.collapsed');
+        collapsedElements.forEach(element => {
+            element.classList.remove('collapsed');
+            const toggle = element.previousElementSibling;
+            if (toggle && toggle.classList.contains('json-toggle')) {
+                toggle.textContent = '▼';
+            }
+        });
+        if (collapsedElements.length > 0) {
+            this.showStatus('All sections expanded', 'success');
+        }
+    }
+
+    collapseAll() {
+        const expandedElements = this.jsonOutput.querySelectorAll('.json-collapsible-content:not(.collapsed)');
+        expandedElements.forEach(element => {
+            element.classList.add('collapsed');
+            const prevSibling = element.previousElementSibling;
+            // Find the toggle button (might be a few siblings back)
+            let toggle = prevSibling;
+            while (toggle && !toggle.classList.contains('json-toggle')) {
+                toggle = toggle.previousElementSibling;
+            }
+            if (toggle && toggle.classList.contains('json-toggle')) {
+                toggle.textContent = '▶';
+            }
+        });
+        if (expandedElements.length > 0) {
+            this.showStatus('All sections collapsed', 'success');
+        }
     }
 
     async copyToClipboard() {

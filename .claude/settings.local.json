@@ -11,7 +11,8 @@
       "Read(//Users/liaoxudong/.ssh/**)",
       "Bash(cat:*)",
       "Bash(git remote set-url:*)",
-      "Bash(ssh-keygen:*)"
+      "Bash(ssh-keygen:*)",
+      "WebFetch(domain:kiplening.github.io)"
     ],
     "deny": [],
     "ask": []
