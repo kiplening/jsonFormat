@@ -22,11 +22,11 @@
                     <h2>Input</h2>
                     <div class="button-group">
                         <button id="encodeBtn" class="btn btn-primary">Encode</button>
-                        <button id="decodeBtn" class="btn btn-secondary">Decode</button>
+                        <button id="decodeBtn" class="btn btn-secondary">Decode URL</button>
                         <button id="clearBtn" class="btn btn-danger">Clear</button>
                     </div>
                 </div>
-                <textarea id="urlInput" placeholder="Paste your text here to encode or decode..."></textarea>
+                <textarea id="urlInput" placeholder="Paste your text or URL here..."></textarea>
             </div>
 
             <div class="output-section">
@@ -40,17 +40,43 @@
             </div>
         </div>
 
-        <div id="message" class="message"></div>
+        <!-- URL Info Display (hidden by default) -->
+        <div id="urlInfoSection" class="url-info-section" style="display: none;">
+            <div class="url-components-grid">
+                <div class="component-item">
+                    <span class="component-label">Protocol</span>
+                    <span id="infoProtocol" class="component-value"></span>
+                    <button class="btn-copy-mini" data-copy="protocol">📋</button>
+                </div>
+                <div class="component-item">
+                    <span class="component-label">Domain</span>
+                    <span id="infoDomain" class="component-value"></span>
+                    <button class="btn-copy-mini" data-copy="domain">📋</button>
+                </div>
+                <div class="component-item">
+                    <span class="component-label">Port</span>
+                    <span id="infoPort" class="component-value"></span>
+                    <button class="btn-copy-mini" data-copy="port">📋</button>
+                </div>
+                <div class="component-item">
+                    <span class="component-label">Path</span>
+                    <span id="infoPath" class="component-value"></span>
+                    <button class="btn-copy-mini" data-copy="path">📋</button>
+                </div>
+                <div class="component-item">
+                    <span class="component-label">Hash</span>
+                    <span id="infoHash" class="component-value"></span>
+                    <button class="btn-copy-mini" data-copy="hash">📋</button>
+                </div>
+            </div>
 
-        <div class="info-section">
-            <h3>About URL Encoding:</h3>
-            <ul>
-                <li>URL encoding converts characters into a format that can be transmitted over the Internet</li>
-                <li>Special characters are replaced with a "%" followed by two hexadecimal digits</li>
-                <li>Useful for encoding JSON data in URLs or query parameters</li>
-                <li>Example: <code>{"name":"John"}</code> → <code>%7B%22name%22%3A%22John%22%7D</code></li>
-            </ul>
+            <div class="params-container">
+                <div class="params-header">Query Parameters (JSON)</div>
+                <pre id="paramsOutput" class="json-output"></pre>
+            </div>
         </div>
+
+        <div id="message" class="message"></div>
     </div>
 
     <script src="url-tool.js"></script>

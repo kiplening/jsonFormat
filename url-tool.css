@@ -63,11 +63,10 @@ header h1 {
 
 .main-content {
     padding: 15px;
-    flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    overflow: hidden;
+    min-height: 0;
 }
 
 .input-section, .output-section {
@@ -92,12 +91,13 @@ header h1 {
 textarea {
     width: 100%;
     flex: 1;
+    min-height: 200px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     padding: 12px;
     font-family: 'Courier New', monospace;
     font-size: 14px;
-    resize: none;
+    resize: vertical;
     transition: border-color 0.3s ease;
 }
 
@@ -179,36 +179,118 @@ button:active {
     display: block;
 }
 
-.info-section {
+
+/* URL Info Section */
+.url-info-section {
+    margin: 0 15px 10px;
+    padding: 12px;
     background: #f8f9fa;
-    padding: 15px 20px;
-    border-top: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.url-components-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.component-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.component-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 12px;
+    min-width: 55px;
+}
+
+.component-value {
+    flex: 1;
+    color: #667eea;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 12px;
+    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-copy-mini {
+    padding: 2px 5px;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid #d1d9e0;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
     flex-shrink: 0;
 }
 
-.info-section h3 {
+.btn-copy-mini:hover {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Params Container */
+.params-container {
+    margin-top: 10px;
+}
+
+.params-header {
     color: #2c3e50;
-    font-size: 1rem;
-    margin-bottom: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding: 2px 0;
 }
 
-.info-section ul {
-    list-style-position: inside;
-    color: #555;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.info-section li {
-    margin-bottom: 5px;
-}
-
-.info-section code {
-    background: #e9ecef;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
+.json-output {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
     font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    user-select: text;
+    cursor: text;
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+    color: #0066cc;
+    font-weight: bold;
+}
+
+.json-string {
+    color: #009900;
+}
+
+.json-number {
+    color: #ff6600;
+}
+
+.json-boolean {
+    color: #cc0066;
+}
+
+.json-null {
+    color: #999999;
 }
 
 @media (max-width: 768px) {

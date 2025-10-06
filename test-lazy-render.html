@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Lazy Rendering</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>Lazy Rendering Test</h2>
+        <p>This page will generate and test large JSON data to verify lazy rendering works correctly.</p>
+        <button onclick="generateSmallTest()">Test Small JSON (100 lines)</button>
+        <button onclick="generateMediumTest()">Test Medium JSON (1000 lines)</button>
+        <button onclick="generateLargeTest()">Test Large JSON (10000+ lines)</button>
+        <button onclick="openMainFormatter()">Open Main Formatter</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function generateSmallTest() {
+            const data = generateTestJSON(50);
+            testInMainFormatter(data, "Small");
+        }
+
+        function generateMediumTest() {
+            const data = generateTestJSON(500);
+            testInMainFormatter(data, "Medium");
+        }
+
+        function generateLargeTest() {
+            const data = generateTestJSON(5000);
+            testInMainFormatter(data, "Large");
+        }
+
+        function generateTestJSON(userCount) {
+            const data = {
+                metadata: {
+                    version: "1.0.0",
+                    generated: new Date().toISOString(),
+                    user_count: userCount,
+                    test_type: "lazy_render_test"
+                },
+                users: []
+            };
+
+            for (let i = 0; i < userCount; i++) {
+                data.users.push({
+                    id: i + 1,
+                    username: `testuser_${i + 1}`,
+                    email: `test${i + 1}@example.com`,
+                    profile: {
+                        name: `Test User ${i + 1}`,
+                        age: 20 + (i % 50),
+                        country: ['USA', 'UK', 'Canada', 'Australia'][i % 4],
+                        bio: `This is a test bio for user ${i + 1}. Lorem ipsum dolor sit amet.`
+                    },
+                    settings: {
+                        theme: ['light', 'dark'][i % 2],
+                        notifications: i % 3 === 0,
+                        privacy: {
+                            public_profile: i % 2 === 0,
+                            show_email: i % 5 === 0
+                        }
+                    },
+                    stats: {
+                        posts: Math.floor(Math.random() * 100),
+                        followers: Math.floor(Math.random() * 1000),
+                        following: Math.floor(Math.random() * 500)
+                    }
+                });
+            }
+
+            return data;
+        }
+
+        function testInMainFormatter(data, testType) {
+            const jsonString = JSON.stringify(data, null, 2);
+            const lines = jsonString.split('\n').length;
+            const sizeKB = (jsonString.length / 1024).toFixed(2);
+
+            document.getElementById('status').innerHTML =
+                `${testType} test data generated:<br>` +
+                `Size: ${sizeKB} KB<br>` +
+                `Lines: ${lines}<br>` +
+                `Users: ${data.users.length}<br>` +
+                `Opening in main formatter...`;
+
+            // Store in localStorage and open main formatter
+            localStorage.setItem('testJSON', jsonString);
+            window.open('index.html', '_blank');
+        }
+
+        function openMainFormatter() {
+            window.open('index.html', '_blank');
+        }
+
+        // Info on page load
+        window.onload = function() {
+            document.getElementById('status').innerHTML =
+                'Click a button above to generate test data.<br>' +
+                'The data will be opened in the main JSON formatter automatically.';
+        };
+    </script>
+</body>
+</html>

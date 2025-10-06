@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test URL Tool</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+        .result { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>URL Tool Test</h1>
+
+    <div class="test">
+        <h3>Test 1: URL with query params</h3>
+        <p>Input: <code>https://example.com/api?name=John&age=30&city=New%20York</code></p>
+        <p id="test1" class="result">Waiting to test...</p>
+    </div>
+
+    <div class="test">
+        <h3>Test 2: Simple encode</h3>
+        <p>Input: <code>{"name":"John"}</code></p>
+        <p id="test2" class="result">Waiting to test...</p>
+    </div>
+
+    <button onclick="runTests()">Run Tests</button>
+
+    <script src="url-tool.js"></script>
+    <script>
+        function runTests() {
+            // Test URL parsing
+            const testUrl = 'https://example.com/api?name=John&age=30&city=New%20York';
+            try {
+                const url = new URL(testUrl);
+                const params = {};
+                url.searchParams.forEach((value, key) => {
+                    params[key] = value;
+                });
+                const result = JSON.stringify(params, null, 2);
+                document.getElementById('test1').innerHTML = '<strong>✓ PASS</strong><br><pre>' + result + '</pre>';
+            } catch(e) {
+                document.getElementById('test1').innerHTML = '<strong>✗ FAIL:</strong> ' + e.message;
+                document.getElementById('test1').className = 'error';
+            }
+
+            // Test encode
+            const testEncode = '{"name":"John"}';
+            try {
+                const encoded = encodeURIComponent(testEncode);
+                document.getElementById('test2').innerHTML = '<strong>✓ PASS</strong><br>Result: <code>' + encoded + '</code>';
+            } catch(e) {
+                document.getElementById('test2').innerHTML = '<strong>✗ FAIL:</strong> ' + e.message;
+                document.getElementById('test2').className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -18,7 +18,12 @@
       "Bash(git checkout:*)",
       "Bash(git log:*)",
       "Bash(grep:*)",
-      "Bash(open test-lazy-render.html)"
+      "Bash(open test-lazy-render.html)",
+      "WebSearch",
+      "Bash(open url-tool.html)",
+      "Bash(node:*)",
+      "Bash(git revert:*)",
+      "Bash(open test-url-tool.html)"
     ],
     "deny": [],
     "ask": []

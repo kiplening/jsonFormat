@@ -1,0 +1,25 @@
+Generating test data...
+Generated 2.76 MB of test data
+Total lines: 124743
+
+First 500 characters:
+{
+  "metadata": {
+    "version": "1.0.0",
+    "generated_at": "2025-10-03T10:11:45.216Z",
+    "total_records": 5000,
+    "description": "Fake test data for JSON formatter performance testing"
+  },
+  "users": [
+    {
+      "id": 1,
+      "username": "user_1",
+      "email": "user1@example.com",
+      "full_name": "Test User 1",
+      "age": 18,
+      "country": "USA",
+      "joined_date": "2019-12-31T16:00:00.000Z",
+      "is_active": false,
+      "preferences": {
+        "theme": "light",
+      
