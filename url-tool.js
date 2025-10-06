@@ -242,7 +242,6 @@ class URLTool {
     }
 
     hideMessage() {
-        this.message.style.display = 'none';
         this.message.className = 'message';
     }
 }
