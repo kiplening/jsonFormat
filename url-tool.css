@@ -26,7 +26,7 @@ body {
 header {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
-    padding: 10px 20px;
+    padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,7 +34,7 @@ header {
 }
 
 header h1 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 400;
 }
 
@@ -62,10 +62,10 @@ header h1 {
 }
 
 .main-content {
-    padding: 15px;
+    padding: 12px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px;
     min-height: 0;
 }
 
@@ -79,12 +79,12 @@ header h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .section-header h2 {
     color: #2c3e50;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
 }
 
@@ -157,10 +157,11 @@ button:active {
 }
 
 .message {
-    padding: 12px 20px;
-    margin: 0 15px 15px;
+    padding: 8px 15px;
+    margin: 0 15px 10px;
     border-radius: 6px;
     font-weight: 500;
+    font-size: 13px;
     display: none;
     flex-shrink: 0;
 }
@@ -182,41 +183,42 @@ button:active {
 
 /* URL Info Section */
 .url-info-section {
-    margin: 0 15px 10px;
+    margin: 0 12px 12px;
     padding: 12px;
     background: #f8f9fa;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .url-components-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px;
-    margin-bottom: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
 .component-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     background: white;
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 5px;
     border: 1px solid #e0e0e0;
+    min-height: 36px;
 }
 
 .component-label {
     font-weight: 600;
     color: #495057;
-    font-size: 12px;
-    min-width: 55px;
+    font-size: 13px;
+    min-width: 60px;
 }
 
 .component-value {
     flex: 1;
     color: #667eea;
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-    font-size: 12px;
+    font-size: 13px;
     word-break: break-all;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -224,11 +226,11 @@ button:active {
 }
 
 .btn-copy-mini {
-    padding: 2px 5px;
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 12px;
     background: transparent;
     border: 1px solid #d1d9e0;
-    border-radius: 2px;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.2s;
     flex-shrink: 0;
@@ -244,28 +246,29 @@ button:active {
 
 /* Params Container */
 .params-container {
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .params-header {
     color: #2c3e50;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     padding: 2px 0;
 }
 
 .json-output {
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 10px;
+    border-radius: 5px;
+    padding: 12px;
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.7;
     overflow-x: auto;
     margin: 0;
-    max-height: 150px;
+    min-height: 300px;
+    max-height: 500px;
     overflow-y: auto;
     user-select: text;
     cursor: text;
