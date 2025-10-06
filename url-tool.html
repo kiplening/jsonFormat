@@ -17,82 +17,26 @@
         </header>
 
         <div class="main-content">
-            <!-- URL Input Section -->
-            <div class="url-input-section">
+            <div class="input-section">
                 <div class="section-header">
-                    <h2>URL</h2>
+                    <h2>Input</h2>
                     <div class="button-group">
-                        <button id="parseBtn" class="btn btn-primary">Parse URL</button>
+                        <button id="encodeBtn" class="btn btn-primary">Encode</button>
+                        <button id="decodeBtn" class="btn btn-secondary">Decode</button>
                         <button id="clearBtn" class="btn btn-danger">Clear</button>
                     </div>
                 </div>
-                <input type="text" id="urlInput" placeholder="Paste your URL here... (e.g., https://example.com/path?name=John&age=30)">
+                <textarea id="urlInput" placeholder="Paste your text here to encode or decode..."></textarea>
             </div>
 
-            <!-- Parsed URL Display Section -->
-            <div class="parsed-section" id="parsedSection" style="display: none;">
-                <!-- Protocol & Host -->
-                <div class="url-part">
-                    <div class="part-header">
-                        <h3>Protocol & Host</h3>
-                        <button class="btn-copy-small" data-copy="protocol">Copy</button>
-                    </div>
-                    <div class="part-content">
-                        <div class="url-field">
-                            <span class="field-label">Protocol:</span>
-                            <span id="protocol" class="field-value"></span>
-                        </div>
-                        <div class="url-field">
-                            <span class="field-label">Host:</span>
-                            <span id="host" class="field-value"></span>
-                        </div>
-                        <div class="url-field">
-                            <span class="field-label">Port:</span>
-                            <span id="port" class="field-value"></span>
-                        </div>
-                        <div class="url-field">
-                            <span class="field-label">Path:</span>
-                            <span id="pathname" class="field-value"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Query Parameters as JSON -->
-                <div class="url-part">
-                    <div class="part-header">
-                        <h3>Query Parameters (JSON)</h3>
-                        <button class="btn-copy-small" data-copy="params">Copy JSON</button>
-                    </div>
-                    <pre id="paramsJson" class="json-output"></pre>
-                </div>
-
-                <!-- Hash -->
-                <div class="url-part">
-                    <div class="part-header">
-                        <h3>Hash</h3>
-                        <button class="btn-copy-small" data-copy="hash">Copy</button>
-                    </div>
-                    <div class="part-content">
-                        <span id="hash" class="field-value"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Encode/Decode Section -->
-            <div class="encode-section">
+            <div class="output-section">
                 <div class="section-header">
-                    <h2>Encode / Decode</h2>
+                    <h2>Output</h2>
                     <div class="button-group">
-                        <button id="encodeBtn" class="btn btn-secondary">Encode</button>
-                        <button id="decodeBtn" class="btn btn-secondary">Decode</button>
+                        <button id="copyBtn" class="btn btn-success">Copy</button>
                     </div>
                 </div>
-                <textarea id="encodeInput" placeholder="Enter text to encode or decode..."></textarea>
-                <div class="section-header">
-                    <h2>Result</h2>
-                    <button id="copyEncodeBtn" class="btn btn-success">Copy</button>
-                </div>
-                <textarea id="encodeOutput" readonly></textarea>
+                <textarea id="urlOutput" readonly></textarea>
             </div>
         </div>
 
