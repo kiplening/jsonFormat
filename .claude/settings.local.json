@@ -23,7 +23,13 @@
       "Bash(open url-tool.html)",
       "Bash(node:*)",
       "Bash(git revert:*)",
-      "Bash(open test-url-tool.html)"
+      "Bash(open test-url-tool.html)",
+      "Bash(open:*)",
+      "WebFetch(domain:ready.so)",
+      "WebFetch(domain:transform.tools)",
+      "WebFetch(domain:ray.so)",
+      "WebFetch(domain:jsonhero.io)",
+      "WebFetch(domain:prettier.io)"
     ],
     "deny": [],
     "ask": []

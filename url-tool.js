@@ -211,6 +211,7 @@ class URLTool {
     }
 
     showMessage(text, type) {
+        this.message.style.display = '';
         this.message.textContent = text;
         this.message.className = `message ${type}`;
 

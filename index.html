@@ -5,76 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSON Formatter</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function(){var s=localStorage.getItem('theme'),d=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-theme',s||(d?'dark':'light'));})();
+    </script>
 </head>
 <body>
-    <div class="container">
+    <div class="app">
         <header>
             <h1>JSON Formatter</h1>
-            <nav class="nav-links">
-                <a href="index.html" class="active">JSON Formatter</a>
-                <a href="url-tool.html">URL Tool</a>
-            </nav>
+            <div class="header-right">
+                <nav class="nav-links">
+                    <a href="index.html" class="active">JSON</a>
+                    <a href="url-tool.html">URL</a>
+                </nav>
+                <button id="themeToggle" class="btn-theme">☾</button>
+            </div>
         </header>
 
-        <main>
-            <div class="formatter-section">
-                <div class="input-section">
-                    <h2>Input JSON</h2>
-                    <textarea id="jsonInput" placeholder="Paste your JSON string here..."></textarea>
-                    <div class="button-group">
-                        <button id="formatBtn">Format JSON</button>
-                        <button id="minifyBtn">Minify JSON</button>
-                        <button id="validateBtn">Validate JSON</button>
-                        <button id="uploadBtn">Upload File</button>
-                        <button id="clearBtn">Clear</button>
-                    </div>
-                    <input type="file" id="fileInput" accept=".json" style="display: none;">
-                </div>
-
-                <div class="output-section">
-                    <div class="section-header-row">
-                        <h2>Formatted JSON</h2>
-                        <div class="control-group">
-                            <label for="indentSize">Indent:</label>
-                            <select id="indentSize">
-                                <option value="2" selected>2 spaces</option>
-                                <option value="4">4 spaces</option>
-                                <option value="tab">Tab</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="output-toolbar">
-                        <div class="toolbar-group">
-                            <button id="expandAllBtn" class="btn-icon" title="Expand All">
-                                <span>▼</span> Expand
-                            </button>
-                            <button id="collapseAllBtn" class="btn-icon" title="Collapse All">
-                                <span>▶</span> Collapse
-                            </button>
-                            <div class="search-box">
-                                <input type="text" id="searchInput" placeholder="Search in JSON..." />
-                                <span id="searchResults" class="search-results"></span>
-                            </div>
-                        </div>
-                        <div class="toolbar-group">
-                            <button id="copyBtn" class="btn-action">
-                                <span>📋</span> Copy
-                            </button>
-                            <button id="downloadBtn" class="btn-action">
-                                <span>⬇️</span> Download
-                            </button>
-                        </div>
-                    </div>
-                    <pre id="jsonOutput"></pre>
-                </div>
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button id="formatBtn"  class="btn-violet">Format</button>
+                <button id="minifyBtn"  class="btn-blue">Minify</button>
+                <button id="validateBtn" class="btn-teal">Validate</button>
+                <div class="toolbar-sep"></div>
+                <button id="uploadBtn">Upload</button>
+                <button id="clearBtn"  class="btn-red">Clear</button>
             </div>
+            <div class="toolbar-right">
+                <button id="expandAllBtn">▼ Expand</button>
+                <button id="collapseAllBtn">▶ Collapse</button>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search…" />
+                    <span id="searchResults" class="search-results"></span>
+                </div>
+                <div class="toolbar-sep"></div>
+                <div class="control-group">
+                    <label for="indentSize">Indent</label>
+                    <select id="indentSize">
+                        <option value="2" selected>2</option>
+                        <option value="4">4</option>
+                        <option value="tab">Tab</option>
+                    </select>
+                </div>
+                <button id="copyBtn">Copy</button>
+                <button id="downloadBtn">Download</button>
+            </div>
+        </div>
 
-            <div class="status-section">
-                <div id="statusMessage" class="status-message"></div>
+        <main>
+            <div class="pane input-pane">
+                <textarea id="jsonInput" placeholder="Paste your JSON here…" spellcheck="false"></textarea>
+            </div>
+            <div class="pane output-pane">
+                <pre id="jsonOutput"></pre>
             </div>
         </main>
+
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
     </div>
 
+    <div id="statusMessage" class="status-message"></div>
+
+    <script src="theme.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

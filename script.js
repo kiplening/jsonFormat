@@ -297,8 +297,7 @@ class JSONFormatter {
                 itemContent.appendChild(this.createTextNode(indentStr + '  '));
 
                 const keySpan = document.createElement('span');
-                keySpan.style.color = '#0066cc';
-                keySpan.style.fontWeight = 'bold';
+                keySpan.className = 'json-key';
                 keySpan.textContent = `"${key}"`;
                 itemContent.appendChild(keySpan);
                 itemContent.appendChild(this.createTextNode(': '));
@@ -328,16 +327,16 @@ class JSONFormatter {
             // Primitive values
             const valueSpan = document.createElement('span');
             if (typeof data === 'string') {
-                valueSpan.style.color = '#009900';
+                valueSpan.className = 'json-string';
                 valueSpan.textContent = `"${data}"`;
             } else if (typeof data === 'number') {
-                valueSpan.style.color = '#ff6600';
+                valueSpan.className = 'json-number';
                 valueSpan.textContent = data;
             } else if (typeof data === 'boolean') {
-                valueSpan.style.color = '#cc0066';
+                valueSpan.className = 'json-boolean';
                 valueSpan.textContent = data;
             } else if (data === null) {
-                valueSpan.style.color = '#999999';
+                valueSpan.className = 'json-null';
                 valueSpan.textContent = 'null';
             }
             container.appendChild(valueSpan);
@@ -482,8 +481,7 @@ class JSONFormatter {
                 itemContent.appendChild(this.createTextNode(indentStr + '  '));
 
                 const keySpan = document.createElement('span');
-                keySpan.style.color = '#0066cc';
-                keySpan.style.fontWeight = 'bold';
+                keySpan.className = 'json-key';
                 keySpan.textContent = `"${key}"`;
                 itemContent.appendChild(keySpan);
                 itemContent.appendChild(this.createTextNode(': '));
@@ -767,17 +765,11 @@ class JSONFormatter {
 
         // Create error display
         const errorContainer = document.createElement('div');
-        errorContainer.style.color = '#721c24';
-        errorContainer.style.padding = '15px';
-        errorContainer.style.backgroundColor = '#f8d7da';
-        errorContainer.style.border = '1px solid #f5c6cb';
-        errorContainer.style.borderRadius = '6px';
+        errorContainer.className = 'json-error-display';
 
         // Error title
         const errorTitle = document.createElement('div');
-        errorTitle.style.fontWeight = 'bold';
-        errorTitle.style.marginBottom = '10px';
-        errorTitle.style.fontSize = '16px';
+        errorTitle.className = 'json-error-title';
         errorTitle.textContent = '❌ Invalid JSON';
         errorContainer.appendChild(errorTitle);
 
@@ -798,12 +790,7 @@ class JSONFormatter {
 
             // Show code snippet with error highlight
             const codeSnippet = document.createElement('pre');
-            codeSnippet.style.backgroundColor = '#fff';
-            codeSnippet.style.padding = '10px';
-            codeSnippet.style.borderRadius = '4px';
-            codeSnippet.style.overflow = 'auto';
-            codeSnippet.style.fontSize = '13px';
-            codeSnippet.style.fontFamily = 'Courier New, monospace';
+            codeSnippet.className = 'json-error-snippet';
 
             const lines = input.split('\n');
             const contextStart = Math.max(0, lineInfo.line - 3);
@@ -815,8 +802,8 @@ class JSONFormatter {
                 const line = lines[i];
 
                 if (lineNum === lineInfo.line) {
-                    snippet += `<span style="background-color: #ffdddd; display: block; padding: 2px 0;">${lineNum}: ${this.escapeHtml(line)}</span>`;
-                    snippet += `<span style="color: #d32f2f; display: block; padding: 2px 0;">${' '.repeat(String(lineNum).length + 2 + lineInfo.column - 1)}^</span>`;
+                    snippet += `<span style="background-color: var(--error-line-bg); display: block; padding: 2px 0;">${lineNum}: ${this.escapeHtml(line)}</span>`;
+                    snippet += `<span style="color: var(--error-arrow); display: block; padding: 2px 0;">${' '.repeat(String(lineNum).length + 2 + lineInfo.column - 1)}^</span>`;
                 } else {
                     snippet += `${lineNum}: ${this.escapeHtml(line)}\n`;
                 }
@@ -828,8 +815,7 @@ class JSONFormatter {
 
         // Common errors help
         const helpSection = document.createElement('div');
-        helpSection.style.marginTop = '10px';
-        helpSection.style.fontSize = '13px';
+        helpSection.className = 'json-error-help';
         helpSection.innerHTML = '<strong>Common issues:</strong><br/>' +
             '• Missing or extra commas<br/>' +
             '• Unquoted keys (use "key" not key)<br/>' +
@@ -857,6 +843,7 @@ class JSONFormatter {
     }
 
     showStatus(message, type) {
+        this.statusMessage.style.display = '';
         this.statusMessage.textContent = message;
         this.statusMessage.className = `status-message ${type}`;
 
