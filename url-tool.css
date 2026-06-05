@@ -324,7 +324,7 @@ main {
 
 .url-components-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 7px;
     margin-bottom: 14px;
 }
@@ -352,6 +352,7 @@ main {
 
 .component-value {
     flex: 1;
+    min-width: 0;
     color: var(--accent-text);
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 12.5px;
@@ -359,28 +360,15 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.btn-copy-mini {
-    padding: 2px 8px;
-    font-size: 11.5px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
     cursor: pointer;
-    transition: all 0.12s;
-    flex-shrink: 0;
-    color: var(--text-muted);
-    font-family: inherit;
-    font-weight: 500;
-    height: 24px;
+    border-radius: 4px;
+    padding: 1px 4px;
+    margin: -1px -4px;
+    transition: background 0.12s;
 }
 
-.btn-copy-mini:hover {
+.component-value:hover {
     background: var(--accent-bg);
-    border-color: var(--accent-muted);
-    color: var(--accent-text);
-    box-shadow: none;
 }
 
 /* ── Params ── */

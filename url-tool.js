@@ -24,11 +24,13 @@ class URLTool {
 
         this.urlInput.addEventListener('input', () => this.hideMessage());
 
-        // Copy buttons for individual fields
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-copy-mini')) {
-                const copyType = e.target.getAttribute('data-copy');
-                this.copyInfoField(copyType);
+        // Double-click a component value to copy it
+        document.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('component-value')) {
+                const text = e.target.textContent;
+                if (text && text !== '(default)' && text !== '(none)') {
+                    this.copyText(text);
+                }
             }
         });
     }
@@ -77,11 +79,17 @@ class URLTool {
             this.urlOutput.value = decoded;
 
             // Display URL components
-            document.getElementById('infoProtocol').textContent = url.protocol;
-            document.getElementById('infoDomain').textContent = url.hostname;
-            document.getElementById('infoPort').textContent = url.port || '(default)';
-            document.getElementById('infoPath').textContent = url.pathname || '/';
-            document.getElementById('infoHash').textContent = url.hash || '(none)';
+            const setComponent = (id, value) => {
+                const el = document.getElementById(id);
+                el.textContent = value;
+                const copyable = value && value !== '(default)' && value !== '(none)';
+                el.title = copyable ? `${value}\n(Double-click to copy)` : value;
+            };
+            setComponent('infoProtocol', url.protocol);
+            setComponent('infoDomain', url.hostname);
+            setComponent('infoPort', url.port || '(default)');
+            setComponent('infoPath', url.pathname || '/');
+            setComponent('infoHash', url.hash || '(none)');
 
             // Extract and display query parameters as JSON
             const params = {};
@@ -134,31 +142,6 @@ class URLTool {
             }
             return '<span class="json-' + cls + '">' + match + '</span>';
         });
-    }
-
-    copyInfoField(fieldType) {
-        let text = '';
-        switch(fieldType) {
-            case 'protocol':
-                text = document.getElementById('infoProtocol').textContent;
-                break;
-            case 'domain':
-                text = document.getElementById('infoDomain').textContent;
-                break;
-            case 'port':
-                text = document.getElementById('infoPort').textContent;
-                break;
-            case 'path':
-                text = document.getElementById('infoPath').textContent;
-                break;
-            case 'hash':
-                text = document.getElementById('infoHash').textContent;
-                break;
-        }
-
-        if (text && text !== '(default)' && text !== '(none)') {
-            this.copyText(text);
-        }
     }
 
     clearAll() {
