@@ -23,6 +23,7 @@ A set of fast, dependency-free, single-page developer tools — plus a game of 2
 - Play with arrow keys, <kbd>WASD</kbd>, <kbd>HJKL</kbd>, or swipe on touch screens
 - Undo (<kbd>U</kbd> or <kbd>Ctrl/⌘ Z</kbd>, up to 20 moves) and <kbd>R</kbd> for a new game
 - Best score and an in-progress game are saved in `localStorage`, so a reload resumes where you left off
+- The board scales to fill the window; <kbd>F</kbd> or the Fullscreen button switches to a distraction-free fullscreen mode
 - Slide/merge animations that respect `prefers-reduced-motion`
 
 All three pages share the header, navigation, and dark/light theme switcher; the two tools use an editor-style split layout.
@@ -42,7 +43,7 @@ open game-2048.html   # 2048
 This is a plain HTML/CSS/JS project with no build step, package manager, or linter.
 
 ```bash
-# Run the test suite (188 tests, Node.js built-ins only)
+# Run the test suite (193 tests, Node.js built-ins only)
 node run-tests.js
 
 # Generate large test data for performance testing (~2.8MB JSON)

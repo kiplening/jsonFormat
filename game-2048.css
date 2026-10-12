@@ -184,6 +184,14 @@ header h1 {
     gap: 4px;
 }
 
+.toolbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 5px;
+    flex-shrink: 0;
+}
+
 /* ── Buttons (toolbar + overlay) ── */
 .toolbar button,
 .btn {
@@ -290,24 +298,34 @@ header h1 {
     flex-direction: column;
 }
 
+/* The play area is a size container so the board can size itself from the
+   space that is actually left after the header, toolbar and padding (cqw/cqh). */
 .game-main {
     flex: 1;
+    min-height: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 22px 18px 28px;
+    container-type: size;
 }
 
 .game {
-    --gap:   10px;
-    --board: clamp(260px, min(100vw - 36px, 100vh - 250px), 460px);
+    /* Largest square that fits: full width, or full height minus the hint + gap */
+    --board: max(240px, min(100cqw, 100cqh - 70px));
+    --gap:   clamp(8px, calc(var(--board) / 46), 16px);
     --cell:  calc((var(--board) - 5 * var(--gap)) / 4);
 
+    margin: auto; /* centres without clipping if the board ever overflows */
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
 }
+
+/* ── Fullscreen mode (html.is-fullscreen is set by Game2048.onFullscreenChange) ── */
+html.is-fullscreen header       { display: none; }
+html.is-fullscreen .hint        { display: none; }
+html.is-fullscreen .game-main   { padding: 14px; }
+html.is-fullscreen .game        { --board: max(240px, min(100cqw, 100cqh)); }
 
 /* ── Board ── */
 .board {
@@ -333,7 +351,7 @@ header h1 {
 
 .cell {
     background: var(--cell-bg);
-    border-radius: 6px;
+    border-radius: max(6px, calc(var(--cell) * 0.06));
 }
 
 .tiles {
@@ -348,7 +366,7 @@ header h1 {
     left: 0;
     width: var(--cell);
     height: var(--cell);
-    border-radius: 6px;
+    border-radius: max(6px, calc(var(--cell) * 0.06));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -423,16 +441,16 @@ header h1 {
 }
 
 .overlay-title {
-    font-size: 30px;
+    font-size: clamp(24px, calc(var(--board) * 0.075), 56px);
     font-weight: 700;
     letter-spacing: -0.5px;
     color: var(--text);
 }
 
 .overlay-text {
-    font-size: 14px;
+    font-size: clamp(13px, calc(var(--board) * 0.032), 20px);
     color: var(--text-2);
-    max-width: 280px;
+    max-width: 70%;
 }
 
 .overlay-actions {
@@ -505,7 +523,9 @@ kbd {
     header { flex-direction: column; gap: 8px; padding: 12px 18px; height: auto; }
     .header-right { width: 100%; justify-content: center; }
     .toolbar { flex-wrap: wrap; height: auto; min-height: 46px; padding: 8px 14px; gap: 5px; }
-    .game { --board: clamp(240px, 100vw - 36px, 460px); }
-    .game-main { padding: 18px 18px 24px; }
+    /* No size containment here: the page scrolls, so the container has no fixed height */
+    .game-main { container-type: normal; padding: 18px 18px 24px; }
+    .game { --board: max(240px, min(100vw - 36px, 100vh - 150px)); }
+    html.is-fullscreen .game { --board: max(240px, min(100vw - 28px, 100vh - 28px)); }
     .message { left: 16px; right: 16px; bottom: 16px; max-width: unset; }
 }

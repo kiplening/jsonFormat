@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Run all tests (188 tests, no dependencies required)
+# Run all tests (193 tests, no dependencies required)
 node run-tests.js
 
 # Generate large test data for performance testing (~2.8MB JSON)
@@ -49,6 +49,8 @@ Game state is a plain 4×4 array of numbers (`0` = empty). The pure logic is DOM
 `move(direction)` is the only mutating entry point during play: it pushes history, swaps in the new grid, spawns a tile, updates `won`/`over`, saves state, then calls `render(anim)`. `render` draws tiles at their old positions, slides them with a CSS `transform` transition (positions are the `--x`/`--y` custom properties), and after `slideDuration` redraws the final grid with `tile-merged` / `tile-new` classes. `finishAnimation()` flushes an in-flight slide so rapid key presses are never dropped.
 
 Persistence uses two `localStorage` keys: `game2048Best` and `game2048State` (grid, score, won, keepPlaying, over). A saved game that is `over` or fails `isValidGrid` is discarded on load.
+
+Board sizing is CSS-only: `.game-main` is a size container (`container-type: size`) and `.game` derives `--board` from `100cqw`/`100cqh`, so the board is always the largest square that fits the space left after the header, toolbar, and hint. The ≤768px media query switches the container off (the page scrolls there, so the container has no fixed height) and sizes from viewport units instead. Fullscreen uses the browser Fullscreen API on `documentElement`; `onFullscreenChange()` mirrors the real state onto an `html.is-fullscreen` class, which hides the header and hint. The button is hidden where the API is unavailable (iOS Safari).
 
 ### Testing approach
 

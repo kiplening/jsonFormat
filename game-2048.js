@@ -30,6 +30,7 @@ class Game2048 {
         this.tryAgainBtn  = document.getElementById('tryAgainBtn');
         this.newGameBtn   = document.getElementById('newGameBtn');
         this.undoBtn      = document.getElementById('undoBtn');
+        this.fullscreenBtn = document.getElementById('fullscreenBtn');
         this.message      = document.getElementById('message');
 
         this.grid        = this.emptyGrid();
@@ -47,6 +48,7 @@ class Game2048 {
 
         this.buildCells();
         this.initEventListeners();
+        this.initFullscreen();
 
         if (!this.restoreState()) {
             this.newGame();
@@ -64,6 +66,8 @@ class Game2048 {
         if (this.keepGoingBtn) this.keepGoingBtn.addEventListener('click', function () { self.keepGoing(); });
 
         document.addEventListener('keydown', function (e) { self.handleKey(e); });
+        document.addEventListener('fullscreenchange',       function () { self.onFullscreenChange(); });
+        document.addEventListener('webkitfullscreenchange', function () { self.onFullscreenChange(); });
 
         if (this.boardEl) {
             this.boardEl.addEventListener('pointerdown',   function (e) { self.onPointerDown(e); });
@@ -104,7 +108,64 @@ class Game2048 {
             return;
         }
         if (lower === 'r') { this.newGame(); return; }
-        if (lower === 'u') { this.undo(); }
+        if (lower === 'u') { this.undo(); return; }
+        if (lower === 'f') { this.toggleFullscreen(); }
+    }
+
+    // ── Fullscreen ───────────────────────────────────────────────────────────
+
+    fullscreenSupported() {
+        return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+    }
+
+    isFullscreen() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    initFullscreen() {
+        if (!this.fullscreenBtn) return;
+        var self = this;
+        if (!this.fullscreenSupported()) {
+            this.fullscreenBtn.style.display = 'none'; // e.g. iOS Safari
+            return;
+        }
+        this.fullscreenBtn.addEventListener('click', function () { self.toggleFullscreen(); });
+        this.onFullscreenChange();
+    }
+
+    /** Enter or leave browser fullscreen for the whole page. */
+    toggleFullscreen() {
+        var root = document.documentElement;
+        if (!root || !this.fullscreenSupported()) return;
+        if (this.isFullscreen()) {
+            var exit = document.exitFullscreen || document.webkitExitFullscreen;
+            if (exit) exit.call(document);
+        } else {
+            var request = root.requestFullscreen || root.webkitRequestFullscreen;
+            if (!request) return;
+            var p = request.call(root);
+            if (p && typeof p.catch === 'function') p.catch(function () { /* blocked (no user gesture) */ });
+        }
+    }
+
+    /** Sync the root class and button label with the actual fullscreen state. */
+    onFullscreenChange() {
+        var active = this.isFullscreen();
+        this.setRootClass('is-fullscreen', active);
+        if (this.fullscreenBtn) {
+            this.fullscreenBtn.textContent = active ? '⤡ Exit fullscreen' : '⛶ Fullscreen';
+            this.fullscreenBtn.title = active ? 'Exit fullscreen (F or Esc)' : 'Toggle fullscreen (F)';
+        }
+    }
+
+    setRootClass(name, on) {
+        var root = document.documentElement;
+        if (!root) return;
+        var classes = String(root.className || '').split(/\s+/).filter(function (c) {
+            return c && c !== name;
+        });
+        if (on) classes.push(name);
+        root.className = classes.join(' ');
     }
 
     onPointerDown(e) {

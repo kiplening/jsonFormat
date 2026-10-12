@@ -12,9 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   header, nav, and theme switcher. Keyboard (arrows / WASD / HJKL), touch swipe,
   undo (up to 20 moves), best score, and automatic resume of an in-progress game
   via `localStorage`. Slide and merge animations honour `prefers-reduced-motion`.
-- 67 tests covering the game's pure logic (line sliding and merging, all four
-  directions, win/game-over detection, random spawning, keyboard handling, and
-  persistence), bringing the suite to 188 tests.
+- The 2048 board scales to fill the whole play area (container-query sizing), and a
+  Fullscreen button / <kbd>F</kbd> key enters browser fullscreen with the header and
+  hint hidden so the board takes the entire screen.
+- 72 tests covering the game's pure logic (line sliding and merging, all four
+  directions, win/game-over detection, random spawning, keyboard handling,
+  persistence, and fullscreen), bringing the suite to 193 tests.
 
 ### Fixed
 - `run-tests.js` resolves the source files relative to its own directory instead of

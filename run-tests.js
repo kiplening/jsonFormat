@@ -812,13 +812,14 @@ test('formatJSON clears previous output before rendering', function() {
  * Build a Game2048 with stub DOM + in-memory localStorage.
  *   opts.rng   — deterministic random source (default: always 0 → first empty cell, value 2)
  *   opts.store — pre-seeded localStorage contents ({ key: string })
+ *   opts.doc   — extra properties merged into the document stub (e.g. fullscreen API)
  * setTimeout / requestAnimationFrame are run synchronously so render()
  * completes inside the call and state can be inspected immediately.
  */
 function makeGame(opts) {
     opts = opts || {};
     var ids = ['board', 'cells', 'tiles', 'score', 'scoreStat', 'best', 'overlay', 'overlayTitle',
-               'overlayText', 'keepGoingBtn', 'tryAgainBtn', 'newGameBtn', 'undoBtn', 'message'];
+               'overlayText', 'keepGoingBtn', 'tryAgainBtn', 'newGameBtn', 'undoBtn', 'fullscreenBtn', 'message'];
     var els = {};
     ids.forEach(function (id) { els[id] = makeEl('div', { id: id }); });
 
@@ -835,6 +836,7 @@ function makeGame(opts) {
         el.style = { setProperty: function (k, v) { this[k] = v; } };
         return el;
     };
+    if (opts.doc) Object.keys(opts.doc).forEach(function (k) { doc[k] = opts.doc[k]; });
 
     var immediate = function (fn) { fn(); return 0; };
     var ctor = new Function('document', 'localStorage', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'window',
@@ -844,6 +846,7 @@ function makeGame(opts) {
     var game = new ctor({ rng: opts.rng || function () { return 0; } });
     game._els   = els;
     game._store = store;
+    game._doc   = doc;
     return game;
 }
 
@@ -1314,6 +1317,66 @@ test('isValidGrid accepts a proper 4×4 numeric grid', function() {
     assert(sharedGame.isValidGrid([[2, 0, 0, 0], Z(), Z(), Z()]));
     assertEqual(sharedGame.isValidGrid([[2, 0, 0], Z(), Z(), Z()]), false);
     assertEqual(sharedGame.isValidGrid(null), false);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 19 — 2048: fullscreen
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — fullscreen');
+
+function fullscreenDoc() {
+    var calls = [];
+    var root = { className: 'existing', requestFullscreen: function () { calls.push('request'); } };
+    return {
+        calls: calls,
+        props: {
+            documentElement:   root,
+            fullscreenEnabled: true,
+            fullscreenElement: null,
+            exitFullscreen:    function () { calls.push('exit'); },
+        },
+    };
+}
+
+test('fullscreen button is hidden when the API is unavailable', function() {
+    var g = makeGame();
+    assertEqual(g.fullscreenSupported(), false, 'unsupported');
+    assertEqual(g._els.fullscreenBtn.style.display, 'none', 'button hidden');
+});
+test('toggleFullscreen requests fullscreen on the root, then exits when active', function() {
+    var fd = fullscreenDoc();
+    var g = makeGame({ doc: fd.props });
+    g.toggleFullscreen();
+    assertDeepEqual(fd.calls, ['request'], 'request first');
+    g._doc.fullscreenElement = fd.props.documentElement;
+    g.toggleFullscreen();
+    assertDeepEqual(fd.calls, ['request', 'exit'], 'then exit');
+});
+test('onFullscreenChange toggles the root class and button label', function() {
+    var fd = fullscreenDoc();
+    var g = makeGame({ doc: fd.props });
+    assertEqual(fd.props.documentElement.className, 'existing', 'no class while inactive');
+    assert(g._els.fullscreenBtn.textContent.indexOf('Fullscreen') !== -1, 'enter label');
+
+    g._doc.fullscreenElement = fd.props.documentElement;
+    g.onFullscreenChange();
+    assertEqual(fd.props.documentElement.className, 'existing is-fullscreen', 'class added, existing kept');
+    assert(g._els.fullscreenBtn.textContent.indexOf('Exit') !== -1, 'exit label');
+
+    g._doc.fullscreenElement = null;
+    g.onFullscreenChange();
+    assertEqual(fd.props.documentElement.className, 'existing', 'class removed');
+});
+test('"f" key toggles fullscreen', function() {
+    var fd = fullscreenDoc();
+    var g = makeGame({ doc: fd.props });
+    g.handleKey(keyEvent('f'));
+    assertDeepEqual(fd.calls, ['request']);
+});
+test('toggleFullscreen is a no-op without a root element or API', function() {
+    var g = makeGame();
+    g.toggleFullscreen(); // must not throw
+    assertEqual(g.isFullscreen(), false);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
