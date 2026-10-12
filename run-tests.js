@@ -1,5 +1,6 @@
 /**
- * Comprehensive test suite for JSONFormatter (script.js) and URLTool (url-tool.js)
+ * Comprehensive test suite for JSONFormatter (script.js), URLTool (url-tool.js)
+ * and Game2048 (game-2048.js)
  *
  * Uses only Node.js built-in modules — no external dependencies required.
  *
@@ -19,7 +20,8 @@
 
 'use strict';
 
-const fs = require('fs');
+const fs   = require('fs');
+const path = require('path');
 
 // ─── Terminal colours ────────────────────────────────────────────────────────
 const GREEN  = '\x1b[32m';
@@ -129,8 +131,9 @@ function loadSrc(filePath) {
     return src;
 }
 
-var scriptSrc  = loadSrc('/Users/marco/vibe_coding/jsonFormat/script.js');
-var urlToolSrc = loadSrc('/Users/marco/vibe_coding/jsonFormat/url-tool.js');
+var scriptSrc  = loadSrc(path.join(__dirname, 'script.js'));
+var urlToolSrc = loadSrc(path.join(__dirname, 'url-tool.js'));
+var gameSrc    = loadSrc(path.join(__dirname, 'game-2048.js'));
 
 // ─── Factory: JSONFormatter ───────────────────────────────────────────────────
 function makeFormatter(inputValue, indentValue) {
@@ -802,6 +805,515 @@ test('formatJSON clears previous output before rendering', function() {
     var text = collectText(f.jsonOutput);
     assert(text.includes('second'), 'second key present after second formatJSON');
     assert(!text.includes('first') || text.includes('second'), 'output refreshed');
+});
+
+// ─── Factory: Game2048 ────────────────────────────────────────────────────────
+/**
+ * Build a Game2048 with stub DOM + in-memory localStorage.
+ *   opts.rng   — deterministic random source (default: always 0 → first empty cell, value 2)
+ *   opts.store — pre-seeded localStorage contents ({ key: string })
+ * setTimeout / requestAnimationFrame are run synchronously so render()
+ * completes inside the call and state can be inspected immediately.
+ */
+function makeGame(opts) {
+    opts = opts || {};
+    var ids = ['board', 'cells', 'tiles', 'score', 'scoreStat', 'best', 'overlay', 'overlayTitle',
+               'overlayText', 'keepGoingBtn', 'tryAgainBtn', 'newGameBtn', 'undoBtn', 'message'];
+    var els = {};
+    ids.forEach(function (id) { els[id] = makeEl('div', { id: id }); });
+
+    var store = Object.assign({}, opts.store || {});
+    var ls = {
+        getItem:    function (k)    { return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null; },
+        setItem:    function (k, v) { store[k] = String(v); },
+        removeItem: function (k)    { delete store[k]; },
+    };
+
+    var doc = makeDoc(els);
+    doc.createElement = function (tag) {
+        var el = makeEl(tag);
+        el.style = { setProperty: function (k, v) { this[k] = v; } };
+        return el;
+    };
+
+    var immediate = function (fn) { fn(); return 0; };
+    var ctor = new Function('document', 'localStorage', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'window',
+        gameSrc + '\nreturn Game2048;'
+    )(doc, ls, immediate, function () {}, immediate, {});
+
+    var game = new ctor({ rng: opts.rng || function () { return 0; } });
+    game._els   = els;
+    game._store = store;
+    return game;
+}
+
+/** rng that returns the given values in order (repeats the last one). */
+function seq(values) {
+    var i = 0;
+    return function () { var v = values[Math.min(i, values.length - 1)]; i++; return v; };
+}
+
+function countTiles(grid) {
+    var n = 0;
+    grid.forEach(function (row) { row.forEach(function (v) { if (v) n++; }); });
+    return n;
+}
+
+function Z() { return [0, 0, 0, 0]; } // fresh zero row each call
+var sharedGame = makeGame();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 13 — 2048: slideRow (pure line logic)
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — slideRow');
+
+test('merges two equal tiles separated by a gap', function() {
+    var r = sharedGame.slideRow([2, 0, 2, 0]);
+    assertDeepEqual(r.row, [4, 0, 0, 0], 'row');
+    assertEqual(r.score, 4, 'score');
+    assertEqual(r.moved, true, 'moved');
+    assertDeepEqual(r.sources, [[0, 2], [], [], []], 'sources');
+});
+test('four equal tiles merge into two pairs', function() {
+    var r = sharedGame.slideRow([2, 2, 2, 2]);
+    assertDeepEqual(r.row, [4, 4, 0, 0]);
+    assertEqual(r.score, 8);
+});
+test('three equal tiles — leftmost pair merges first', function() {
+    var r = sharedGame.slideRow([4, 4, 4, 0]);
+    assertDeepEqual(r.row, [8, 4, 0, 0]);
+    assertDeepEqual(r.sources, [[0, 1], [2], [], []]);
+});
+test('merged tile does not merge again in the same move (no cascade)', function() {
+    assertDeepEqual(sharedGame.slideRow([2, 2, 4, 0]).row, [4, 4, 0, 0], 'left pair');
+    assertDeepEqual(sharedGame.slideRow([4, 2, 2, 0]).row, [4, 4, 0, 0], 'right pair');
+});
+test('row with no merges and no gaps is unchanged', function() {
+    var r = sharedGame.slideRow([2, 4, 8, 16]);
+    assertDeepEqual(r.row, [2, 4, 8, 16]);
+    assertEqual(r.moved, false, 'moved');
+    assertEqual(r.score, 0, 'score');
+    assertDeepEqual(r.sources, [[0], [1], [2], [3]]);
+});
+test('single tile slides to the edge without scoring', function() {
+    var r = sharedGame.slideRow([0, 0, 0, 2]);
+    assertDeepEqual(r.row, [2, 0, 0, 0]);
+    assertEqual(r.moved, true);
+    assertEqual(r.score, 0);
+    assertDeepEqual(r.sources[0], [3]);
+});
+test('tile already at the edge does not count as moved', function() {
+    assertEqual(sharedGame.slideRow([2, 0, 0, 0]).moved, false);
+});
+test('empty row stays empty', function() {
+    var r = sharedGame.slideRow(Z());
+    assertDeepEqual(r.row, Z());
+    assertEqual(r.moved, false);
+});
+test('does not mutate the input row', function() {
+    var input = [2, 0, 2, 0];
+    sharedGame.slideRow(input);
+    assertDeepEqual(input, [2, 0, 2, 0]);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 14 — 2048: computeMove (all four directions)
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — computeMove');
+
+test('left: each row slides toward column 0', function() {
+    var r = sharedGame.computeMove([[0, 2, 0, 2], [4, 0, 4, 0], Z(), [0, 0, 0, 8]], 'left');
+    assertDeepEqual(r.grid, [[4, 0, 0, 0], [8, 0, 0, 0], Z(), [8, 0, 0, 0]]);
+    assertEqual(r.score, 12);
+    assertEqual(r.moved, true);
+});
+test('right: each row slides toward column 3', function() {
+    var r = sharedGame.computeMove([[2, 0, 2, 0], [2, 4, 0, 0], Z(), Z()], 'right');
+    assertDeepEqual(r.grid, [[0, 0, 0, 4], [0, 0, 2, 4], Z(), Z()]);
+    assertEqual(r.score, 4);
+});
+test('up: columns slide toward row 0', function() {
+    var r = sharedGame.computeMove([[2, 0, 0, 0], [2, 0, 0, 8], Z(), [0, 4, 0, 8]], 'up');
+    assertDeepEqual(r.grid, [[4, 4, 0, 16], Z(), Z(), Z()]);
+    assertEqual(r.score, 20);
+});
+test('down: columns slide toward row 3', function() {
+    var r = sharedGame.computeMove([[2, 0, 0, 0], [2, 0, 0, 0], Z(), Z()], 'down');
+    assertDeepEqual(r.grid, [Z(), Z(), Z(), [4, 0, 0, 0]]);
+    assertEqual(r.score, 4);
+});
+test('reports moved=false when nothing can slide in that direction', function() {
+    var r = sharedGame.computeMove([[2, 4, 8, 16], Z(), Z(), Z()], 'left');
+    assertEqual(r.moved, false);
+    assertEqual(r.score, 0);
+});
+test('does not mutate the input grid', function() {
+    var g = [[2, 0, 2, 0], Z(), Z(), Z()];
+    sharedGame.computeMove(g, 'left');
+    assertDeepEqual(g, [[2, 0, 2, 0], Z(), Z(), Z()]);
+});
+test('moves: a merge produces two trajectories to the same destination', function() {
+    var r = sharedGame.computeMove([[2, 0, 2, 0], Z(), Z(), Z()], 'left');
+    assertEqual(r.moves.length, 2, 'one entry per source tile');
+    r.moves.forEach(function (m) {
+        assertDeepEqual(m.to, { r: 0, c: 0 }, 'destination');
+        assertEqual(m.value, 2, 'original value');
+        assertEqual(m.merged, true, 'merged flag');
+    });
+    assertDeepEqual(r.moves.map(function (m) { return m.from.c; }).sort(), [0, 2], 'sources');
+});
+test('moves: a stationary tile has from === to and merged=false', function() {
+    var r = sharedGame.computeMove([[2, 0, 0, 0], Z(), Z(), Z()], 'left');
+    assertEqual(r.moves.length, 1);
+    assertDeepEqual(r.moves[0].from, { r: 0, c: 0 });
+    assertDeepEqual(r.moves[0].to,   { r: 0, c: 0 });
+    assertEqual(r.moves[0].merged, false);
+});
+test('moves: vertical trajectory is reported in grid coordinates', function() {
+    var r = sharedGame.computeMove([Z(), Z(), Z(), [0, 0, 2, 0]], 'up');
+    assertDeepEqual(r.moves[0].from, { r: 3, c: 2 });
+    assertDeepEqual(r.moves[0].to,   { r: 0, c: 2 });
+});
+test('cellFor maps slide positions onto the grid for every direction', function() {
+    assertDeepEqual(sharedGame.cellFor('left',  1, 2, 4), { r: 1, c: 2 });
+    assertDeepEqual(sharedGame.cellFor('right', 1, 0, 4), { r: 1, c: 3 });
+    assertDeepEqual(sharedGame.cellFor('up',    1, 2, 4), { r: 2, c: 1 });
+    assertDeepEqual(sharedGame.cellFor('down',  1, 0, 4), { r: 3, c: 1 });
+});
+test('cellFor throws on an unknown direction', function() {
+    var threw = false;
+    try { sharedGame.cellFor('diagonal', 0, 0, 4); } catch (e) { threw = true; }
+    assert(threw, 'should throw');
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 15 — 2048: board queries & random tiles
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — board queries & random tiles');
+
+var STUCK = [[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 2]];
+
+test('canMove: true on an empty grid', function() { assert(sharedGame.canMove(sharedGame.emptyGrid())); });
+test('canMove: false on a full checkerboard', function() { assertEqual(sharedGame.canMove(STUCK), false); });
+test('canMove: true when a horizontal pair exists', function() {
+    var g = sharedGame.cloneGrid(STUCK); g[3][3] = 4;
+    assert(sharedGame.canMove(g));
+});
+test('canMove: true when a vertical pair exists', function() {
+    var g = sharedGame.cloneGrid(STUCK); g[3][0] = 2;
+    assert(sharedGame.canMove(g));
+});
+test('hasWon: false below 2048, true at 2048 and above', function() {
+    assertEqual(sharedGame.hasWon([[1024, 1024, 0, 0], Z(), Z(), Z()]), false);
+    assertEqual(sharedGame.hasWon([[2048, 0, 0, 0], Z(), Z(), Z()]), true);
+    assertEqual(sharedGame.hasWon([[4096, 0, 0, 0], Z(), Z(), Z()]), true);
+});
+test('getEmptyCells returns every zero cell in row-major order', function() {
+    var cells = sharedGame.getEmptyCells([[2, 0, 4, 0], [2, 2, 2, 2], [2, 2, 2, 2], [2, 2, 2, 0]]);
+    assertDeepEqual(cells, [{ r: 0, c: 1 }, { r: 0, c: 3 }, { r: 3, c: 3 }]);
+});
+test('emptyGrid produces size×size zeros', function() {
+    var g = sharedGame.emptyGrid();
+    assertEqual(g.length, 4);
+    g.forEach(function (row) { assertDeepEqual(row, Z()); });
+});
+test('cloneGrid is a deep copy', function() {
+    var a = [[2, 0, 0, 0], Z(), Z(), Z()];
+    var b = sharedGame.cloneGrid(a);
+    b[0][0] = 99;
+    assertEqual(a[0][0], 2);
+});
+test('addRandomTile: rng 0 picks the first empty cell and spawns a 2', function() {
+    var g = makeGame({ rng: seq([0, 0]) });
+    var grid = [[2, 0, 0, 0], Z(), Z(), Z()];
+    var spawned = g.addRandomTile(grid);
+    assertDeepEqual(spawned, { r: 0, c: 1, value: 2 });
+    assertEqual(grid[0][1], 2);
+});
+test('addRandomTile: second rng draw ≥ 0.9 spawns a 4', function() {
+    var g = makeGame({ rng: seq([0.99, 0.95]) });
+    var grid = [[2, 0, 0, 0], Z(), Z(), Z()];
+    var spawned = g.addRandomTile(grid);
+    assertEqual(spawned.value, 4, 'value');
+    assertDeepEqual({ r: spawned.r, c: spawned.c }, { r: 3, c: 3 }, 'last empty cell');
+});
+test('addRandomTile: returns null and leaves a full grid untouched', function() {
+    var grid = sharedGame.cloneGrid(STUCK);
+    assertEqual(sharedGame.addRandomTile(grid), null);
+    assertDeepEqual(grid, STUCK);
+});
+test('tileClass: named class up to 2048, tile-super beyond', function() {
+    assertEqual(sharedGame.tileClass(2), 'tile-2');
+    assertEqual(sharedGame.tileClass(2048), 'tile-2048');
+    assertEqual(sharedGame.tileClass(4096), 'tile-super');
+});
+test('swipeDirection: picks the dominant axis', function() {
+    assertEqual(sharedGame.swipeDirection(50, 10), 'right');
+    assertEqual(sharedGame.swipeDirection(-50, 0), 'left');
+    assertEqual(sharedGame.swipeDirection(0, -40), 'up');
+    assertEqual(sharedGame.swipeDirection(5, 30), 'down');
+});
+test('swipeDirection: returns null below the threshold', function() {
+    assertEqual(sharedGame.swipeDirection(10, 10), null);
+    assertEqual(sharedGame.swipeDirection(0, 0), null);
+});
+test('keyToDirection: arrows, WASD and HJKL', function() {
+    assertEqual(sharedGame.keyToDirection('ArrowLeft'), 'left');
+    assertEqual(sharedGame.keyToDirection('d'), 'right');
+    assertEqual(sharedGame.keyToDirection('k'), 'up');
+    assertEqual(sharedGame.keyToDirection('s'), 'down');
+    assertEqual(sharedGame.keyToDirection('x'), null);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 16 — 2048: game flow (new game, move, undo, win, game over)
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — game flow');
+
+test('new game starts with two tiles, score 0, not over/won', function() {
+    var g = makeGame();
+    assertEqual(countTiles(g.grid), 2, 'tiles');
+    assertEqual(g.score, 0, 'score');
+    assertEqual(g.over, false, 'over');
+    assertEqual(g.won, false, 'won');
+    assertEqual(g.history.length, 0, 'history');
+});
+test('new game renders 16 background cells and one element per tile', function() {
+    var g = makeGame();
+    assertEqual(g._els.cells.children.length, 16, 'cells');
+    assertEqual(g._els.tiles.children.length, 2, 'tiles');
+    assert(g._els.tiles.children[0].className.indexOf('tile-2') !== -1, 'tile class');
+});
+test('move merges, scores and spawns exactly one new tile', function() {
+    var g = makeGame(); // rng 0 → tiles at (0,0) and (0,1), both 2
+    assertDeepEqual(g.grid[0], [2, 2, 0, 0], 'setup');
+    assertEqual(g.move('left'), true, 'moved');
+    assertEqual(g.grid[0][0], 4, 'merged tile');
+    assertEqual(g.score, 4, 'score');
+    assertEqual(countTiles(g.grid), 2, '1 merged + 1 spawned');
+    assertEqual(g._els.score.textContent, '4', 'score element');
+});
+test('move that changes nothing returns false and spawns nothing', function() {
+    var g = makeGame();
+    g.grid = [[2, 0, 0, 0], Z(), Z(), Z()];
+    assertEqual(g.move('left'), false);
+    assertEqual(countTiles(g.grid), 1);
+    assertEqual(g.history.length, 0);
+});
+test('render after a move marks merged and spawned tiles', function() {
+    var g = makeGame();
+    g.move('left');
+    var classes = g._els.tiles.children.map(function (t) { return t.className; }).join(' ');
+    assert(classes.indexOf('tile-merged') !== -1, 'merged class present');
+    assert(classes.indexOf('tile-new') !== -1, 'new class present');
+});
+test('undo restores the previous grid and score', function() {
+    var g = makeGame();
+    var before = g.cloneGrid(g.grid);
+    g.move('left');
+    assertEqual(g.undo(), true);
+    assertDeepEqual(g.grid, before, 'grid restored');
+    assertEqual(g.score, 0, 'score restored');
+    assertEqual(g._els.undoBtn.disabled, true, 'undo disabled when history empty');
+});
+test('undo with no history returns false and shows an error toast', function() {
+    var g = makeGame();
+    assertEqual(g.undo(), false);
+    assertEqual(g._els.message.textContent, 'Nothing to undo', 'error toast text');
+});
+test('undo button enabled after a move', function() {
+    var g = makeGame();
+    g.move('left');
+    assertEqual(g._els.undoBtn.disabled, false);
+});
+test('history is capped at maxHistory entries', function() {
+    var g = makeGame();
+    for (var i = 0; i < g.maxHistory + 5; i++) g.pushHistory();
+    assertEqual(g.history.length, g.maxHistory);
+});
+test('new game clears history and score', function() {
+    var g = makeGame();
+    g.move('left');
+    g.newGame();
+    assertEqual(g.score, 0);
+    assertEqual(g.history.length, 0);
+    assertEqual(countTiles(g.grid), 2);
+});
+test('reaching 2048 sets won and shows the win overlay with Keep going', function() {
+    var g = makeGame();
+    g.grid = [[1024, 1024, 0, 0], Z(), Z(), Z()];
+    g.move('left');
+    assertEqual(g.won, true, 'won');
+    assertEqual(g.over, false, 'not over');
+    assert(g._els.overlay.className.indexOf('visible') !== -1, 'overlay visible');
+    assertEqual(g._els.overlayTitle.textContent, 'You win!');
+    assertEqual(g._els.keepGoingBtn.style.display, '', 'keep going shown');
+});
+test('after winning, moves are blocked until Keep going is chosen', function() {
+    var g = makeGame();
+    g.grid = [[1024, 1024, 0, 0], Z(), Z(), Z()];
+    g.move('left');
+    assertEqual(g.move('right'), false, 'blocked');
+    g.keepGoing();
+    assertEqual(g._els.overlay.className, 'overlay', 'overlay hidden');
+    assertEqual(g.move('right'), true, 'allowed');
+});
+test('game over when the board fills with no merges left', function() {
+    var g = makeGame();
+    g.grid = [[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 4]];
+    assertEqual(g.move('left'), true, 'last merge');
+    assertEqual(g.over, true, 'over');
+    assert(g._els.overlay.className.indexOf('visible') !== -1, 'overlay visible');
+    assertEqual(g._els.overlayTitle.textContent, 'Game over');
+    assertEqual(g._els.keepGoingBtn.style.display, 'none', 'keep going hidden');
+    assertEqual(g.move('up'), false, 'moves blocked');
+});
+test('undo after game over re-enables play', function() {
+    var g = makeGame();
+    g.grid = [[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 4]];
+    g.move('left');
+    g.undo();
+    assertEqual(g.over, false);
+    assertEqual(g._els.overlay.className, 'overlay');
+});
+test('updateStatus flags a stuck board as over', function() {
+    var g = makeGame();
+    g.grid = g.cloneGrid(STUCK);
+    g.updateStatus();
+    assertEqual(g.over, true);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 17 — 2048: keyboard handling
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — keyboard');
+
+function keyEvent(key, extra) {
+    var e = { key: key, prevented: false, preventDefault: function () { this.prevented = true; } };
+    if (extra) Object.keys(extra).forEach(function (k) { e[k] = extra[k]; });
+    return e;
+}
+
+test('ArrowLeft moves and prevents default scrolling', function() {
+    var g = makeGame();
+    var e = keyEvent('ArrowLeft');
+    g.handleKey(e);
+    assertEqual(g.score, 4, 'moved');
+    assertEqual(e.prevented, true, 'preventDefault called');
+});
+test('WASD keys move (case-insensitive)', function() {
+    var g = makeGame();
+    g.handleKey(keyEvent('A'));
+    assertEqual(g.score, 4);
+});
+test('keys with Ctrl/Cmd/Alt modifiers are ignored (except Ctrl+Z())', function() {
+    var g = makeGame();
+    g.handleKey(keyEvent('ArrowLeft', { ctrlKey: true }));
+    g.handleKey(keyEvent('ArrowLeft', { metaKey: true }));
+    g.handleKey(keyEvent('ArrowLeft', { altKey: true }));
+    assertEqual(g.score, 0);
+});
+test('Ctrl+Z() undoes the last move', function() {
+    var g = makeGame();
+    g.handleKey(keyEvent('ArrowLeft'));
+    g.handleKey(keyEvent('z', { ctrlKey: true }));
+    assertEqual(g.score, 0);
+    assertEqual(g.history.length, 0);
+});
+test('"u" undoes and "r" starts a new game', function() {
+    var g = makeGame();
+    g.handleKey(keyEvent('ArrowLeft'));
+    g.handleKey(keyEvent('u'));
+    assertEqual(g.score, 0, 'undo');
+    g.handleKey(keyEvent('ArrowLeft'));
+    g.handleKey(keyEvent('r'));
+    assertEqual(g.score, 0, 'reset');
+    assertEqual(g.history.length, 0, 'history cleared');
+});
+test('keys typed into an input field are ignored', function() {
+    var g = makeGame();
+    g.handleKey(keyEvent('ArrowLeft', { target: { tagName: 'INPUT' } }));
+    assertEqual(g.score, 0);
+});
+test('unrelated keys do nothing', function() {
+    var g = makeGame();
+    var e = keyEvent('x');
+    g.handleKey(e);
+    assertEqual(g.score, 0);
+    assertEqual(e.prevented, false);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUITE 18 — 2048: persistence (best score, resume)
+// ═══════════════════════════════════════════════════════════════════════════════
+suite('2048 — persistence');
+
+test('best score updates and is written to storage', function() {
+    var g = makeGame();
+    g.move('left');
+    assertEqual(g.best, 4, 'best');
+    assertEqual(g._store.game2048Best, '4', 'stored');
+    assertEqual(g._els.best.textContent, '4', 'best element');
+});
+test('best score is loaded from storage on start', function() {
+    var g = makeGame({ store: { game2048Best: '1234' } });
+    assertEqual(g.best, 1234);
+    assertEqual(g._els.best.textContent, '1234');
+});
+test('garbage best score falls back to 0', function() {
+    assertEqual(makeGame({ store: { game2048Best: 'abc' } }).best, 0);
+    assertEqual(makeGame({ store: { game2048Best: '-5' } }).best, 0);
+});
+test('best score is not lowered by a worse game', function() {
+    var g = makeGame({ store: { game2048Best: '100' } });
+    g.move('left');
+    assertEqual(g.best, 100);
+});
+test('game state is saved after every move', function() {
+    var g = makeGame();
+    g.move('left');
+    var saved = JSON.parse(g._store.game2048State);
+    assertDeepEqual(saved.grid, g.grid, 'grid');
+    assertEqual(saved.score, 4, 'score');
+});
+test('an in-progress game is resumed from storage', function() {
+    var grid = [[2, 4, 8, 0], Z(), Z(), [0, 0, 0, 16]];
+    var g = makeGame({ store: { game2048State: JSON.stringify({ grid: grid, score: 60, won: false, keepPlaying: false, over: false }) } });
+    assertDeepEqual(g.grid, grid, 'grid restored');
+    assertEqual(g.score, 60, 'score restored');
+    assertEqual(g.history.length, 0, 'no history across reloads');
+    assertEqual(g._els.tiles.children.length, 4, 'tiles rendered');
+});
+test('a finished (over) saved game starts fresh instead', function() {
+    var g = makeGame({ store: { game2048State: JSON.stringify({ grid: STUCK, score: 999, over: true }) } });
+    assertEqual(g.over, false);
+    assertEqual(g.score, 0);
+    assertEqual(countTiles(g.grid), 2);
+});
+test('a won game that chose Keep going resumes without the overlay', function() {
+    var g = makeGame({ store: { game2048State: JSON.stringify({ grid: [[2048, 2, 0, 0], Z(), Z(), Z()], score: 20000, won: true, keepPlaying: true, over: false }) } });
+    assertEqual(g.won, true);
+    assertEqual(g.keepPlaying, true);
+    assertEqual(g._els.overlay.className, 'overlay', 'overlay hidden');
+    assertEqual(g.move('right'), true, 'can keep playing');
+});
+test('malformed saved state is discarded and a new game starts', function() {
+    var bad = [
+        'not json',
+        JSON.stringify({ grid: [[1, 2, 3]], score: 1 }),
+        JSON.stringify({ grid: [['a', 0, 0, 0], Z(), Z(), Z()], score: 1 }),
+        JSON.stringify({ grid: [[2, 0, 0, 0], Z(), Z(), Z()], score: 'x' }),
+    ];
+    bad.forEach(function (raw, i) {
+        var g = makeGame({ store: { game2048State: raw } });
+        assertEqual(countTiles(g.grid), 2, 'fresh game for case ' + i);
+        assertEqual(g.score, 0, 'score 0 for case ' + i);
+    });
+});
+test('isValidGrid accepts a proper 4×4 numeric grid', function() {
+    assert(sharedGame.isValidGrid([[2, 0, 0, 0], Z(), Z(), Z()]));
+    assertEqual(sharedGame.isValidGrid([[2, 0, 0], Z(), Z(), Z()]), false);
+    assertEqual(sharedGame.isValidGrid(null), false);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
